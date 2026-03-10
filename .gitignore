@@ -1,0 +1,23 @@
+# Generated assembler sources
+src/*.s
+
+# Object files
+*.o
+
+# mbt build state
+.mbt/
+contrib/
+dist/
+
+# IDE
+*.geany
+compile_commands.json
+.cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
