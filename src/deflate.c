@@ -51,7 +51,14 @@
 
 #include "deflate.h"
 
-static const char deflate_copyright[] =
+/* Diagnostics go to the console on MVS; the host test build has no WTO. */
+#ifdef __MVS__
+#include <mvs/wto.h>
+#else
+#define wtof(...) ((void)0)
+#endif
+
+static const char deflate_copyright[] __attribute__((used)) =
    " deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome

@@ -10,6 +10,7 @@
 #include <string.h>
 #include "zlib.h"
 #include "zip.h"
+#include <mvs/wto.h>
 
 #ifdef STDC
 #  include <stddef.h>
@@ -166,12 +167,6 @@ local void init_linkedlist(ll)
     ll->first_block = ll->last_block = NULL;
 }
 
-local void free_linkedlist(ll)
-    linkedlist_data* ll;
-{
-    free_datablock(ll->first_block);
-    ll->first_block = ll->last_block = NULL;
-}
 
 
 local int add_data_in_datablock(ll,buf,len)
@@ -278,6 +273,7 @@ local uLong ziplocal_TmzDateToDosDate(ptm,dosDate)
     uLong dosDate;
 {
     uLong year = (uLong)ptm->tm_year;
+    (void)dosDate;
     if (year>1980)
         year-=1980;
     else if (year>80)
@@ -298,6 +294,8 @@ extern zipFile ZEXPORT zipOpen2 (pathname, append, globalcomment, pzlib_filefunc
 {
     zip_internal ziinit;
     zip_internal* zi;
+
+    (void)globalcomment;
 
 
     if (pzlib_filefunc_def==NULL)
