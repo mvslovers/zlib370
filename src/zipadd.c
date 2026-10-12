@@ -170,8 +170,7 @@ typedef struct
 } zip_internal;
 
 
-local void free_datablock(ldi)
-    linkedlist_datablock_internal* ldi;
+local void free_datablock(linkedlist_datablock_internal *ldi)
 {
     while (ldi!=NULL)
     {
@@ -181,8 +180,7 @@ local void free_datablock(ldi)
     }
 }
 
-local void init_linkedlist(ll)
-    linkedlist_data* ll;
+local void init_linkedlist(linkedlist_data *ll)
 {
     ll->first_block = ll->last_block = NULL;
 }
@@ -201,11 +199,7 @@ local void init_linkedlist(ll)
 
 local int ziplocal_putValue OF((const zlib_filefunc_def* pzlib_filefunc_def,
                                 voidpf filestream, uLong x, int nbByte));
-local int ziplocal_putValue (pzlib_filefunc_def, filestream, x, nbByte)
-    const zlib_filefunc_def* pzlib_filefunc_def;
-    voidpf filestream;
-    uLong x;
-    int nbByte;
+local int ziplocal_putValue(const zlib_filefunc_def *pzlib_filefunc_def, voidpf filestream, uLong x, int nbByte)
 {
     unsigned char buf[4];
     int n;
@@ -220,10 +214,7 @@ local int ziplocal_putValue (pzlib_filefunc_def, filestream, x, nbByte)
 }
 
 local void ziplocal_putValue_inmemory OF((void* dest, uLong x, int nbByte));
-local void ziplocal_putValue_inmemory (dest, x, nbByte)
-    void* dest;
-    uLong x;
-    int nbByte;
+local void ziplocal_putValue_inmemory(void *dest, uLong x, int nbByte)
 {
     unsigned char* buf=(unsigned char*)dest;
     int n;
@@ -396,8 +387,8 @@ zip_add_dataset_bin(zipFile             file,
 
     zi->ci.flag = 0;
     if ((level==8) || (level==9))   zi->ci.flag |= 2;
-    if ((level==2))                 zi->ci.flag |= 4;
-    if ((level==1))                 zi->ci.flag |= 6;
+    if (level==2)                   zi->ci.flag |= 4;
+    if (level==1)                   zi->ci.flag |= 6;
 
     /* We want deflate the input dataset to a temp dataset before
      * we write anything to the zip file dataset so that we can
@@ -712,9 +703,9 @@ tempCloseFileInZipRaw(zipFile file, uLong *crc32, uLong *uncompressed_size, uLon
         if (err==ZIP_OK) /* uncompressed size, unknown */
             err = ziplocal_putValue(&zi->z_filefunc,zi->filestream,uncompressed_size,4);
 
-	    if (ZSEEK(zi->z_filefunc,zi->filestream,
+        if (ZSEEK(zi->z_filefunc,zi->filestream,
                   cur_pos_inzip,ZLIB_FILEFUNC_SEEK_SET)!=0)
-		    err = ZIP_ERRNO;
+            err = ZIP_ERRNO;
     }
 #endif /* not needed for our temp zip file */
 
@@ -834,8 +825,8 @@ tempOpenNewFileInZip(zipFile file, int level)
     zi->ci.flag = 0;
 
     if ((level==8) || (level==9))   zi->ci.flag |= 2;
-    if ((level==2))                 zi->ci.flag |= 4;
-    if ((level==1))                 zi->ci.flag |= 6;
+    if (level==2)                   zi->ci.flag |= 4;
+    if (level==1)                   zi->ci.flag |= 6;
 
     zi->ci.crc32 = 0;
     zi->ci.method = Z_DEFLATED;
