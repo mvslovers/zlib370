@@ -68,3 +68,23 @@ sources = [
   "src/zipopen.c",
 ]
 
+# zip_add_dataset_bin() reads a data set and allocates a temporary one:
+# MVS only. The input is the fixture member SAMPLE on DD INPUT.
+[test.TSTZIPDS]
+host = false
+fixtures = { INPUT = ["test/fixtures/sample.txt"] }
+sources = [
+  "test/tstzipds.c",
+  "src/adler32.c",
+  "src/crc32.c",
+  "src/deflate.c",
+  "src/inffast.c",
+  "src/inflate.c",
+  "src/inftrees.c",
+  "src/trees.c",
+  "src/zutil.c",
+  "src/ioapi.c",
+  "src/unzip.c",
+  "src/zipopen.c",
+  "src/zipadd.c",
+]

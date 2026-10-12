@@ -185,6 +185,71 @@ local void init_linkedlist(linkedlist_data *ll)
     ll->first_block = ll->last_block = NULL;
 }
 
+local linkedlist_datablock_internal *allocate_new_datablock(void)
+{
+    linkedlist_datablock_internal* ldi;
+    ldi = (linkedlist_datablock_internal*)
+                 ALLOC(sizeof(linkedlist_datablock_internal));
+    if (ldi!=NULL)
+    {
+        ldi->next_datablock = NULL ;
+        ldi->filled_in_this_block = 0 ;
+        ldi->avail_in_this_block = SIZEDATA_INDATABLOCK ;
+    }
+    return ldi;
+}
+
+local int add_data_in_datablock(linkedlist_data *ll, const void *buf, uLong len)
+{
+    linkedlist_datablock_internal* ldi;
+    const unsigned char* from_copy;
+
+    if (ll==NULL)
+        return ZIP_INTERNALERROR;
+
+    if (ll->last_block == NULL)
+    {
+        ll->first_block = ll->last_block = allocate_new_datablock();
+        if (ll->first_block == NULL)
+            return ZIP_INTERNALERROR;
+    }
+
+    ldi = ll->last_block;
+    from_copy = (unsigned char*)buf;
+
+    while (len>0)
+    {
+        uInt copy_this;
+        uInt i;
+        unsigned char* to_copy;
+
+        if (ldi->avail_in_this_block==0)
+        {
+            ldi->next_datablock = allocate_new_datablock();
+            if (ldi->next_datablock == NULL)
+                return ZIP_INTERNALERROR;
+            ldi = ldi->next_datablock ;
+            ll->last_block = ldi;
+        }
+
+        if (ldi->avail_in_this_block < len)
+            copy_this = (uInt)ldi->avail_in_this_block;
+        else
+            copy_this = (uInt)len;
+
+        to_copy = &(ldi->data[ldi->filled_in_this_block]);
+
+        for (i=0;i<copy_this;i++)
+            *(to_copy+i)=*(from_copy+i);
+
+        ldi->filled_in_this_block += copy_this;
+        ldi->avail_in_this_block -= copy_this;
+        from_copy += copy_this ;
+        len -= copy_this;
+    }
+    return ZIP_OK;
+}
+
 
 
 
@@ -295,6 +360,7 @@ zip_add_dataset_bin(zipFile             file,
     uInt            size_filename           = 0;
     uInt            size_comment            = 0;
     uInt            i;
+    char            *central_header         = NULL;
 
 #if 1   /* debugging */
     wtof("%s: Enter", __func__);
@@ -412,8 +478,13 @@ zip_add_dataset_bin(zipFile             file,
 
     zi->ci.size_centralheader = SIZECENTRALHEADER + size_filename + 
                                       size_extrafield_global + size_comment;
-    zi->ci.central_header = (char*)ALLOC((uInt)zi->ci.size_centralheader);
+    central_header = (char*)ALLOC((uInt)zi->ci.size_centralheader);
+    zi->ci.central_header = central_header;
     wtof("%s: zi->ci.central_header = %p", __func__, zi->ci.central_header);
+    if (central_header == NULL) {
+        err = ZIP_INTERNALERROR;
+        goto quit;
+    }
 
     ziplocal_putValue_inmemory(zi->ci.central_header,(uLong)CENTRALHEADERMAGIC,4);
     /* version info */
@@ -447,11 +518,6 @@ zip_add_dataset_bin(zipFile             file,
     for (i=0;i<size_comment;i++)
         *(zi->ci.central_header+SIZECENTRALHEADER+size_filename+
               size_extrafield_global+i) = ascii_comment[i];
-
-    if (zi->ci.central_header == NULL) {
-        err = ZIP_INTERNALERROR;
-        goto quit;
-    }
 
     wtof("%s: Writing local header", __func__);
 
@@ -541,9 +607,21 @@ zip_add_dataset_bin(zipFile             file,
         }
     } while ((err == ZIP_OK) && (size_read>0));
 
+    /* the entry exists for unzip only once its header is in the central
+       directory, as zipCloseFileInZipRaw() does for an ordinary entry */
+    if (err == ZIP_OK)
+        err = add_data_in_datablock(&zi->central_dir, central_header,
+                                    (uLong)zi->ci.size_centralheader);
+    if (err == ZIP_OK)
+        zi->number_entry++;
+
     zi->in_opened_file_inzip = 0;
 
 quit:
+    if (central_header) {
+        free(central_header);
+        zi->ci.central_header = NULL;
+    }
     if (buf)        free(buf);
     if (fp)         fclose(fp);
     if (tempdd[3])  __dsfree(&tempdd[3]);
