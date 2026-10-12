@@ -51,7 +51,7 @@
 
 #include "deflate.h"
 
-static const char deflate_copyright[] =
+static const char deflate_copyright[] __attribute__((used)) =
    " deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
@@ -379,49 +379,24 @@ int ZEXPORT deflateInit_(z_streamp strm, int level, const char *version,
 int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
                           int windowBits, int memLevel, int strategy,
                           const char *version, int stream_size) {
-    int     err;
     deflate_state *s;
     int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
 
-    // wtof("%s: Enter", __func__);
-
     if (version == Z_NULL || version[0] != my_version[0] ||
         stream_size != sizeof(z_stream)) {
-        err = Z_VERSION_ERROR;
-        wtof("%s: bad version", __func__);
-        wtof("%s:   version \"%s\"", __func__, version);
-        wtof("%s: myversion \"%s\"", __func__, my_version);
-        goto quit;
+        return Z_VERSION_ERROR;
     }
-
-    if (strm == Z_NULL) {
-        wtof("%s: strm is NULL", __func__);
-        err = Z_STREAM_ERROR;
-        goto quit;
-    }
+    if (strm == Z_NULL) return Z_STREAM_ERROR;
 
     strm->msg = Z_NULL;
+    /* Under Z_SOLO too: zutil.c provides zcalloc/zcfree in this build. */
     if (strm->zalloc == (alloc_func)0) {
-// #ifdef Z_SOLO
-//         wtof("%s: strm->zalloc = NULL", __func__);
-//         err = Z_STREAM_ERROR;
-//         goto quit;
-// #else
         strm->zalloc = zcalloc;
         strm->opaque = (voidpf)0;
-// #endif
     }
-
-    if (strm->zfree == (free_func)0) {
-// #ifdef Z_SOLO
-//         wtof("%s: strm->zfree = NULL", __func__);
-//         err = Z_STREAM_ERROR;
-//         goto quit;
-// #else
+    if (strm->zfree == (free_func)0)
         strm->zfree = zcfree;
-// #endif
-    }
 
 #ifdef FASTEST
     if (level != 0) level = 1;
@@ -429,15 +404,10 @@ int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
 #endif
 
-    // wtof("%s: level = %d", __func__, level);
-
-    // wtof("%s: windowBits = %d", __func__, windowBits);
     if (windowBits < 0) { /* suppress zlib wrapper */
         wrap = 0;
-        if (windowBits < -15) {
-            err = Z_STREAM_ERROR;
-            goto quit;
-        }
+        if (windowBits < -15)
+            return Z_STREAM_ERROR;
         windowBits = -windowBits;
     }
 #ifdef GZIP
@@ -449,24 +419,11 @@ int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
     if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
         windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
         strategy < 0 || strategy > Z_FIXED || (windowBits == 8 && wrap != 1)) {
-        wtof("%s: Invalid settings", __func__);
-        wtof("%s:   memLevel    %d", __func__, memLevel);
-        wtof("%s:   method      %d", __func__, method);
-        wtof("%s:   windowBits  %d", __func__, windowBits);
-        wtof("%s:   level       %d", __func__, level);
-        wtof("%s:   strategy    %d", __func__, strategy);
-        wtof("%s:   wrap        %d", __func__, wrap);
-        err = Z_STREAM_ERROR;
-        goto quit;
+        return Z_STREAM_ERROR;
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
     s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
-    if (s == Z_NULL) {
-        wtof("%s: ZALLOC() failure", __func__);
-        err = Z_MEM_ERROR;
-        goto quit;
-    }
-
+    if (s == Z_NULL) return Z_MEM_ERROR;
     strm->state = (struct internal_state FAR *)s;
     s->strm = strm;
     s->status = INIT_STATE;     /* to pass state test in deflateReset() */
@@ -537,9 +494,7 @@ int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
         s->status = FINISH_STATE;
         strm->msg = ERR_MSG(Z_MEM_ERROR);
         deflateEnd (strm);
-        err = Z_MEM_ERROR;
-        wtof("%s: Z_MEM_ERROR", __func__);
-        goto quit;
+        return Z_MEM_ERROR;
     }
 #ifdef LIT_MEM
     s->d_buf = (ushf *)(s->pending_buf + (s->lit_bufsize << 1));
@@ -558,12 +513,7 @@ int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
     s->strategy = strategy;
     s->method = (Byte)method;
 
-    err = deflateReset(strm);
-    // wtof("%s: deflateReset(strm); err=%d", __func__, err);
-
-quit:
-    // wtof("%s: Exit err=%d", __func__, err);
-    return err;
+    return deflateReset(strm);
 }
 
 /* =========================================================================

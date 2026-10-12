@@ -8,7 +8,7 @@
 
 #define MAXBITS 15
 
-static const char inflate_copyright[] =
+static const char inflate_copyright[] __attribute__((used)) =
    " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome

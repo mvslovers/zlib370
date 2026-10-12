@@ -278,6 +278,8 @@ void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr) {
 
 // #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
+#include <stdlib.h>
+
 #ifndef STDC
 extern voidp malloc(uInt size);
 extern voidp calloc(uInt items, uInt size);
