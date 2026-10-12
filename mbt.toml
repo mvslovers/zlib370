@@ -1,0 +1,31 @@
+schema = 3
+
+[project]
+name = "zlib370"
+version = "1.0.0-dev"
+kind = "library"
+
+[toolchain]
+mbt = "3.0"
+cc370 = "1.6.1"
+libc370 = "2.10.0"
+
+[build]
+cflags = [
+  "-DZ_SOLO",
+  "-DNOCRYPT",
+  "-DUSE_FILE32API",
+  "-DNO_ADDFILEINEXISTINGZIP",
+]
+
+[lib]
+name = "zlib370"
+sources = ["src/*.c"]
+headers = [
+  "include/zlib.h",
+  "include/zconf.h",
+  "include/ioapi.h",
+  "include/unzip.h",
+  "include/zip.h",
+]
+

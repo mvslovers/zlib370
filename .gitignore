@@ -3,6 +3,11 @@ src/*.s
 
 # Object files
 *.o
+*.d
+
+# Build artifacts
+build/
+*.a
 
 # mbt build state
 .mbt/
