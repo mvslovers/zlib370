@@ -42,9 +42,9 @@ the sources it links. Names have at most 8 characters.
 
 - `test/memfile.h` gives zipOpen2()/unzOpen2() an archive in storage, so
   minizip tests need no data set. Include it from a test; it is not a test.
-- Fixture members are loaded with mbt's fixture loader. Until mbt#261 is
-  released, a fixture line beginning with `//` in column 1 breaks the
-  job (it ends the in-stream data); keep fixtures free of JCL.
+- Fixture lines beginning with `//` or `/*` arrive as data since mbt
+  3.0.0-dev d58fd82 (mbt#261); an older mbt ends the in-stream data
+  there and breaks the job.
 - Binary or RECFM U/VB input cannot come from a fixture (FB 80 only).
 - **dev1 is shared: ask the MBT session for a slot before `mbt test
   --mvs`**, and delete `IBMUSER.ZLIB370.**` (TESTLIB and FIX data sets)
