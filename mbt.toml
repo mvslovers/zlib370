@@ -11,80 +11,19 @@ cc370 = "1.6.1"
 libc370 = "2.10.0"
 
 [build]
-cflags = [
-  "-DZ_SOLO",
-  "-DNOCRYPT",
-  "-DUSE_FILE32API",
-  "-DNO_ADDFILEINEXISTINGZIP",
-]
+cflags = ["-DZ_SOLO"]
 
 [lib]
 name = "zlib370"
 sources = ["src/*.c"]
-headers = [
-  "include/zlib.h",
-  "include/zconf.h",
-  "include/ioapi.h",
-  "include/unzip.h",
-  "include/zip.h",
-]
+headers = ["include/zlib.h", "include/zconf.h"]
 
 [tests]
 rent = false
 reus = false
 
-# A test is built from its own file only; this one runs the zlib core
-# (the ZIP sources are left out), so it links those modules.
+# A test is built from its own file only; this one exercises the whole
+# library, so it links every source module.
 [test.TSTZLIB]
-sources = [
-  "test/tstzlib.c",
-  "src/adler32.c",
-  "src/compress.c",
-  "src/crc32.c",
-  "src/deflate.c",
-  "src/inffast.c",
-  "src/inflate.c",
-  "src/inftrees.c",
-  "src/trees.c",
-  "src/uncompr.c",
-  "src/zutil.c",
-]
+sources = ["test/tstzlib.c", "src/*.c"]
 
-# minizip: the archive is written to and read from storage, so the
-# test needs no data set. zipadd.c (zip_add_dataset_bin) is MVS-only.
-[test.TSTZIP]
-sources = [
-  "test/tstzip.c",
-  "src/adler32.c",
-  "src/crc32.c",
-  "src/deflate.c",
-  "src/inffast.c",
-  "src/inflate.c",
-  "src/inftrees.c",
-  "src/trees.c",
-  "src/zutil.c",
-  "src/ioapi.c",
-  "src/unzip.c",
-  "src/zipopen.c",
-]
-
-# zip_add_dataset_bin() reads a data set and allocates a temporary one:
-# MVS only. The input is the fixture member SAMPLE on DD INPUT.
-[test.TSTZIPDS]
-host = false
-fixtures = { INPUT = ["test/fixtures/sample.txt"] }
-sources = [
-  "test/tstzipds.c",
-  "src/adler32.c",
-  "src/crc32.c",
-  "src/deflate.c",
-  "src/inffast.c",
-  "src/inflate.c",
-  "src/inftrees.c",
-  "src/trees.c",
-  "src/zutil.c",
-  "src/ioapi.c",
-  "src/unzip.c",
-  "src/zipopen.c",
-  "src/zipadd.c",
-]

@@ -1,53 +1,44 @@
 # zlib370
 
-**zlib 1.3.1 and minizip for MVS 3.8j, as a static library.**
+**zlib 1.3.1 for MVS 3.8j, as a static library.**
 
-zlib370 brings the [zlib](https://zlib.net) compression library (deflate,
-inflate, zlib and gzip wrapping, crc32, adler32) and the minizip ZIP
-reader/writer to MVS 3.8j. It is built on the workstation with CC/370
-(cc370) against LIBC/370 (libc370) and linked into a program statically.
-Nothing of it is installed on MVS itself.
+zlib370 brings the [zlib](https://zlib.net) compression library to
+MVS 3.8j: deflate and inflate, zlib and gzip wrapping, crc32 and adler32.
+It is built on the workstation with CC/370 (cc370) against LIBC/370
+(libc370) and linked into a program statically; nothing of it is
+installed on MVS itself. It is an offer to developers: nothing requires
+it, any program can use it.
 
 > **Status:** under evaluation. The library builds and its tests pass on
-> the workstation and on MVS. Whether it becomes a maintained part of the
-> mvslovers projects is still open.
+> the workstation and on MVS.
 
 ## What is in it
 
-| Header | What |
-|---|---|
-| `zlib.h`, `zconf.h` | zlib 1.3.1: `deflate*`, `inflate*`, `compress`/`uncompress`, `crc32`, `adler32` |
-| `zip.h`, `unzip.h`, `ioapi.h` | minizip 0.21 (Gilles Vollant): write and read ZIP archives, with pluggable file functions |
+`zlib.h` and `zconf.h`, with the zlib 1.3.1 API: `deflateInit2()`,
+`deflate()`, `inflateInit2()`, `inflate()`, `compress()`/`uncompress()`,
+`crc32()`, `adler32()` and the rest of the core.
 
 gzip *file* I/O (`gzopen`, `gzread`, ...) is not included: the library is
 built with `Z_SOLO`. gzip *streams* are, through `deflateInit2()` and
-`inflateInit2()` with `windowBits` 31 (or 47 to detect zlib or gzip).
+`inflateInit2()` with `windowBits` 31 (or 47 to accept zlib and gzip).
+
+The linker takes only the modules a program calls, so a program that
+only compresses gets no inflate code.
 
 ## Differences from upstream
 
-These sources are altered from the zlib and minizip distributions:
-
 - **External names.** MVS object modules allow eight characters. Every
-  exported function carries an `asm("...")` label in `zlib.h`, `zutil.h`,
-  `zip.h` and `unzip.h` (`deflateInit2_` is `DEFLAT02`, and so on), so no
-  two names collide when they are cut to eight characters.
+  exported function carries an `asm("...")` label in `zlib.h`, `zutil.h`
+  and the internal headers (`deflateInit2_` is `DEFLAT02`, and so on), so
+  no two names collide when they are cut to eight characters.
 - **Default allocator under `Z_SOLO`.** Upstream `Z_SOLO` requires the
   caller to supply `zalloc`/`zfree`. Here a stream with both left at zero
   uses `malloc`/`free`, for deflate and inflate alike.
-- **`zip_add_dataset_bin(zipfile, dataset, name)`** adds an MVS data set
-  to an archive, read in binary. The entry name and a comment that records
-  the record format (`E,FB80`, for example) are translated to ASCII
-  (code page 037 to ISO 8859-1). It allocates a temporary data set
-  (`&&TEMPZIP`) while it works.
-- **Diagnostics.** `zip_add_dataset_bin()`, `zipOpenNewFileInZip2()` and
-  error paths in `deflateInit2_()` write trace messages to the console
-  with WTO.
-- Everything compiles cleanly under `-Wall -Wextra -Werror`, with cc370 and
-  with a native compiler.
+- **`compress()`/`uncompress()` are available under `Z_SOLO`.** Upstream
+  hides them in that configuration.
 
-Entries written with `zipOpenNewFileInZip()` keep their names and data
-exactly as given: on MVS that is EBCDIC. Translate names to ASCII yourself
-if the archive is meant for another system.
+The library itself calls nothing from the C library but `malloc` and
+`free`, and writes no messages.
 
 ## Storage
 
@@ -70,7 +61,7 @@ that compresses well enough.
 
 The library builds on the workstation with the cc370 toolchain and
 [mbt 3](https://github.com/mvslovers/mbt), the `mbt` program on your
-`PATH`. MVS is touched only by the MVS test run.
+`PATH`.
 
 ```sh
 mbt build          # build/zlib370.a
@@ -93,16 +84,16 @@ Once a release is published, a project uses the library through its
 
 ## Tests
 
-| Test | Runs on | Covers |
-|---|---|---|
-| `TSTZLIB` | workstation, MVS | deflate/inflate round trips (zlib, gzip, small window; EBCDIC text, binary, empty, over 64 KB), crc32/adler32 check values, `compress`/`uncompress` |
-| `TSTZIP` | workstation, MVS | minizip: write and read an archive held in storage |
-| `TSTZIPDS` | MVS | `zip_add_dataset_bin()` on a fixture member |
+`TSTZLIB` runs on the workstation and on MVS: deflate/inflate round trips
+with zlib and gzip wrapping and a small window, on EBCDIC text, random
+binary data, an empty buffer and 70 000 bytes; the crc32 and adler32
+check values; `compress`/`uncompress`, a damaged stream and an output
+buffer that is too small. Every stream goes through a counting
+allocator, so a leak fails the test.
 
 ## License
 
-zlib is Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler, minizip
-Copyright (C) 1998-2003 Gilles Vollant, both under the
+zlib is Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler, under the
 [zlib license](https://zlib.net/zlib_license.html), reproduced at the top
-of `zlib.h`. The sources here are altered versions as described above,
+of `zlib.h`. The sources here are an altered version as described above,
 not the original software.
