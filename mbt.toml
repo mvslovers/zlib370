@@ -49,3 +49,22 @@ sources = [
   "src/uncompr.c",
   "src/zutil.c",
 ]
+
+# minizip: the archive is written to and read from storage, so the
+# test needs no data set. zipadd.c (zip_add_dataset_bin) is MVS-only.
+[test.TSTZIP]
+sources = [
+  "test/tstzip.c",
+  "src/adler32.c",
+  "src/crc32.c",
+  "src/deflate.c",
+  "src/inffast.c",
+  "src/inflate.c",
+  "src/inftrees.c",
+  "src/trees.c",
+  "src/zutil.c",
+  "src/ioapi.c",
+  "src/unzip.c",
+  "src/zipopen.c",
+]
+
