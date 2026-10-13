@@ -9,8 +9,8 @@ It is built on the workstation with CC/370 (cc370) against LIBC/370
 installed on MVS itself. It is an offer to developers: nothing requires
 it, any program can use it.
 
-> **Status:** under evaluation. The library builds and its tests pass on
-> the workstation and on MVS.
+> **Status:** released as 1.0.0. The library builds and its tests pass on
+> the workstation and on MVS. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What is in it
 
