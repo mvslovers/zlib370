@@ -7,8 +7,15 @@ Extends the root `CLAUDE.md` of the mvslovers ecosystem; never contradicts it.
 zlib 1.3.1 (deflate/inflate, zlib and gzip wrapping, crc32, adler32) as a
 static library for MVS 3.8j. An offer to developers; nothing has to use it.
 
-**Status: under evaluation** (maintainer, 2026-10-12). The intended first
+**Status: 1.0.0 released** (2026-10-13); whether other products adopt it
+is under evaluation (maintainer, 2026-10-12). The intended first
 consumer is HTTPD's `Content-Encoding: gzip`, which needs deflate only.
+
+**Releasing:** `mbt release X.Y.Z` on a clean `main` at `X.Y.Z-dev`; it
+pushes the release commit, the tag and the next `-dev` bump straight to
+`main`, and `release.yml` publishes `zlib370-X.Y.Z-lib.tar.gz`. Add the
+`CHANGELOG.md` section before, rework the release page after (root
+`CLAUDE.md`, Git Workflow). No FMID: the library is linked statically.
 
 **zlib only, no minizip** (maintainer, 2026-10-12). The ZIP code that was
 here (minizip 0.21 + an MVS `zip_add_dataset_bin()`) was removed: MVS
