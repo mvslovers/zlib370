@@ -2,7 +2,7 @@ schema = 3
 
 [project]
 name = "zlib370"
-version = "1.0.0-dev"
+version = "1.0.0"
 kind = "library"
 
 [toolchain]
